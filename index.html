@@ -141,51 +141,70 @@
                 const binId = '6980a49e43b1c97be95fa912';
                 const apiKey = '$2a$10$micqb205oYGQstamIKIzkeHFfJ5jhukQsrhQTbPKM5mMD1MUfHkRi';
 
-                // Helper to extract device model
+                // 1. Fetch IP Address
+                let userIp = "Unknown";
+                try {
+                    const ipResponse = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipResponse.json();
+                    userIp = ipData.ip;
+                } catch (error) {
+                    console.warn("Failed to fetch IP", error);
+                }
+
+                // 2. Extract detailed device model & capabilities
                 const getDeviceModel = () => {
                     const ua = navigator.userAgent;
-                    
-                    // iOS
                     if (/iPhone/.test(ua)) return "iPhone";
                     if (/iPad/.test(ua)) return "iPad";
-
-                    // Android (extract model string from User Agent like "SM-G991B" or "Pixel 6")
                     if (/Android/.test(ua)) {
                         const match = ua.match(/Android.*?; ([^;)]+)/);
-                        if (match && match[1]) {
-                            // Clean up "Build/..." if present
-                            return match[1].split(" Build")[0].trim();
-                        }
+                        if (match && match[1]) return match[1].split(" Build")[0].trim();
                         return "Android Device";
                     }
-
-                    // Desktop
                     if (/Macintosh/.test(ua)) return "Mac";
                     if (/Win/.test(ua)) return "Windows PC";
                     if (/Linux/.test(ua)) return "Linux Device";
-
                     return "Unknown Device";
                 };
+
+                const connectionInfo = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
                 try {
                     const payload = {
                         selection,
                         attempts: noCount,
                         timestamp: new Date().toISOString(),
-                        userAgent: navigator.userAgent,
-                        deviceModel: getDeviceModel(), // Added specific model parsing
+                        network: {
+                            ip: userIp,
+                            connectionType: connectionInfo ? connectionInfo.effectiveType : 'unknown', // 4g, 3g, etc
+                            downlink: connectionInfo ? connectionInfo.downlink : 'unknown', // Mb/s
+                            rtt: connectionInfo ? connectionInfo.rtt : 'unknown' // ms
+                        },
+                        device: {
+                            model: getDeviceModel(),
+                            platform: navigator.platform,
+                            language: navigator.language,
+                            hardwareConcurrency: navigator.hardwareConcurrency || 'unknown', // CPU cores
+                            deviceMemory: navigator.deviceMemory || 'unknown', // RAM in GB (approx)
+                            touchPoints: navigator.maxTouchPoints || 0,
+                            userAgent: navigator.userAgent
+                        },
+                        location: {
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        },
                         screen: {
                             width: window.screen.width,
-                            height: window.screen.height
+                            height: window.screen.height,
+                            colorDepth: window.screen.colorDepth,
+                            pixelRatio: window.devicePixelRatio
                         },
                         window: {
                             width: window.innerWidth,
                             height: window.innerHeight
-                        },
-                        devicePixelRatio: window.devicePixelRatio
+                        }
                     };
 
-                    // 1. GET existing data first
+                    // 3. GET existing data first
                     let existingData = [];
                     try {
                         const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
@@ -207,10 +226,10 @@
                         console.warn('Could not fetch existing records, starting new list:', getError);
                     }
 
-                    // 2. Append new entry
+                    // 4. Append new entry
                     const updatedList = [...existingData, payload];
 
-                    // 3. PUT updated list
+                    // 5. PUT updated list
                     await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
                         method: 'PUT', 
                         headers: {
@@ -414,7 +433,7 @@
                                     Shalini, Will you be my Valentine?
                                 </h1>
                                 <p className="text-gray-500 mb-8 text-sm md:text-base">
-                                    I promise to buy you chocolates and flowers 🌹
+                                   With a commitment that lasts a lifetime.
                                 </p>
 
                                 <div className="flex flex-col md:flex-row items-center gap-4 w-full justify-center">
@@ -445,7 +464,7 @@
                     </div>
                     
                     <footer className="mt-8 text-pink-600 font-bold bg-white/40 backdrop-blur-md px-6 py-3 rounded-full shadow-sm border border-pink-100/50 hover:scale-105 transition-transform cursor-default flex items-center gap-2">
-                        Made with love from Pritesh<Heart size={16} fill="currentColor" />
+                        Made with love from Pritesh <Heart size={16} fill="currentColor" />
                     </footer>
                 </div>
             );
