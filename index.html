@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WYBMV</title>
+    <title>Be My Valentine?</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -52,14 +52,14 @@
 
         const Stars = (props) => (
             <IconBase {...props}>
-                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z" />
                 <path d="M5 3v4" /><path d="M9 5H1" />
             </IconBase>
         );
 
         const Sparkles = (props) => (
             <IconBase {...props}>
-                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z" />
                 <path d="M20 3v4" /><path d="M22 5h-4" /><path d="M4 17v2" /><path d="M5 18H3" />
             </IconBase>
         );
@@ -141,12 +141,39 @@
                 const binId = '6980a49e43b1c97be95fa912';
                 const apiKey = '$2a$10$micqb205oYGQstamIKIzkeHFfJ5jhukQsrhQTbPKM5mMD1MUfHkRi';
 
+                // Helper to extract device model
+                const getDeviceModel = () => {
+                    const ua = navigator.userAgent;
+                    
+                    // iOS
+                    if (/iPhone/.test(ua)) return "iPhone";
+                    if (/iPad/.test(ua)) return "iPad";
+
+                    // Android (extract model string from User Agent like "SM-G991B" or "Pixel 6")
+                    if (/Android/.test(ua)) {
+                        const match = ua.match(/Android.*?; ([^;)]+)/);
+                        if (match && match[1]) {
+                            // Clean up "Build/..." if present
+                            return match[1].split(" Build")[0].trim();
+                        }
+                        return "Android Device";
+                    }
+
+                    // Desktop
+                    if (/Macintosh/.test(ua)) return "Mac";
+                    if (/Win/.test(ua)) return "Windows PC";
+                    if (/Linux/.test(ua)) return "Linux Device";
+
+                    return "Unknown Device";
+                };
+
                 try {
                     const payload = {
                         selection,
                         attempts: noCount,
                         timestamp: new Date().toISOString(),
                         userAgent: navigator.userAgent,
+                        deviceModel: getDeviceModel(), // Added specific model parsing
                         screen: {
                             width: window.screen.width,
                             height: window.screen.height
@@ -387,7 +414,7 @@
                                     Shalini, Will you be my Valentine?
                                 </h1>
                                 <p className="text-gray-500 mb-8 text-sm md:text-base">
-                                   With a commitment that lasts a lifetime 🌹
+                                    I promise to buy you chocolates and flowers 🌹
                                 </p>
 
                                 <div className="flex flex-col md:flex-row items-center gap-4 w-full justify-center">
@@ -418,7 +445,7 @@
                     </div>
                     
                     <footer className="mt-8 text-pink-600 font-bold bg-white/40 backdrop-blur-md px-6 py-3 rounded-full shadow-sm border border-pink-100/50 hover:scale-105 transition-transform cursor-default flex items-center gap-2">
-                        Made with love by Pritesh<Heart size={16} fill="currentColor" />
+                        Made with love from Pritesh<Heart size={16} fill="currentColor" />
                     </footer>
                 </div>
             );
